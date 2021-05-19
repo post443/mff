@@ -367,7 +367,7 @@
 			
 				dataString += '</tr>';
 
-				if (element.leadAbility && ignore.indexOf('leadAbility') < 0) {
+				if (element.leadAbility) {
 					if (Array.isArray(element.leadAbility)) {
 						element.leadAbility.forEach((el) => {
 							leadData.add(el.type);
@@ -377,7 +377,7 @@
 					}
 				}
 
-				if (element.helpAbility && ignore.indexOf('helpAbility') < 0) {
+				if (element.helpAbility) {
 					if (Array.isArray(element.helpAbility)) {
 						element.helpAbility.forEach((el) => {
 							helpData.add(el.type);
@@ -389,22 +389,34 @@
 			})
 
 			document.getElementsByTagName('tbody')[0].innerHTML = dataString;
-
 			if (ignore.indexOf('leadAbility') < 0) {
 				leadData.forEach((element) => {
+					if(status.leadAbility === element){
+						leadString += 'selected';
+					}
 					leadString += '<option value="' + element + '">' + element + '</option>';
 				});
 				document.getElementById('leadAbility').innerHTML = leadString;;
 			}
 			if (ignore.indexOf('helpAbility') < 0) {
 				helpData.forEach((element) => {
-					helpString += '<option value="' + element + '">' + element + '</option>';
+					helpString += '<option ';
+					if(status.helpAbility === element){
+						helpString += 'selected';
+					}
+					helpString += 'value="' + element + '">' + element + '</option>';
 				});
 				document.getElementById('helpAbility').innerHTML = helpString;
 			}
+
+			
 			if (ignore.indexOf('ability') < 0) {
 				abilityData.forEach((element) => {
-					abilityString += '<option value="' + element + '">' + element + '</option>';
+					abilityString += '<option ';
+					if(status.ability === element){
+						abilityString += 'selected';
+					}
+					abilityString +=' value="' + element + '">' + element + '</option>';
 				});
 				document.getElementById('ability').innerHTML = abilityString;
 			}
@@ -594,7 +606,7 @@
 		['米·勒娃', '女', '力量', '现代', '外星人', '反派', ['强大','灵活','邪恶'], [{ for: '所有人', type: '异常状态时间', value: '24%' }], null,2],
 		['米·勒娃', '女', '力量', '电影《惊奇队长》', '外星人', '反派', ['强大','灵活','邪恶'], [{ for: '所有人', type: '异常状态时间', value: '24%' }], null,2],
 
-		
+
 		['X教授', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
 		['钢铁侠', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
 		['幻视', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
