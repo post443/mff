@@ -1,786 +1,407 @@
 ﻿<!DOCTYPE html>
 <html lang="zh-cn">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <title>MFF</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <meta name="author" content="原大地母亲护佑着你" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
 
-<head>
-	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-	<title>MFF</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-	<meta name="author" content="原大地母亲护佑着你">
-	<style>
-		table{
-			border-collapse: collapse;
-			text-align: center;
-    		margin: 0 auto;
-		}
-		tbody{
-			border: 1px solid #fff;
-		}
-		td{
-			padding: 1px;
-			border: 1px #d6dcde ridge;
-		}
-		td em {
-			color:#ff0000;
-			font-style: unset;
-    		font-weight: bolder;
-		}
-		.bg_a {
-			background: #ddf4ff;
-		}
-		#name{
-			width:6em;
-		}
-		.underline{
-			text-decoration: underline #545454 solid;
-		}
-		header{
-			text-align: center;
-		}
-	</style>
-</head>
+  <body>
+    <header>
+      <section onclick="mff.typeChange()">
+        <label
+          ><input type="radio" name="type" value="all" checked />全部英雄</label
+        >
+        <label><input type="radio" name="type" value="力量" />力量</label>
+        <label><input type="radio" name="type" value="能量" />能量</label>
+        <label><input type="radio" name="type" value="敏捷" />敏捷</label>
+        <label><input type="radio" name="type" value="全能" />全能</label>
+        <label for="t3">
+          <input id="t3" type="checkbox" onchange="mff.t3Change()" />T3
+        </label>
+      </section>
+      <section>
+        <select id="side" onchange="mff.sideChange()">
+          <option value="all">全部</option>
+          <option value="英雄">英雄</option>
+          <option value="反派">反派</option>
+          <option value="中立">中立</option>
+        </select>
+        <select id="gender" onchange="mff.genderChange()">
+          <option value="all">全部</option>
+          <option value="男">男性</option>
+          <option value="女">女性</option>
+          <option value="中">中性</option>
+        </select>
+        <select id="allies" onchange="mff.alliesChange()">
+          <option value="all">全部</option>
+          <option value="人类">人类</option>
+          <option value="变种人">变种人</option>
+          <option value="异人族">异人族</option>
+          <option value="外星人">外星人</option>
+          <option value="生物">生物</option>
+          <option value="未知">未知</option>
+        </select>
+        <select id="ability" onchange="mff.abilityChange()"></select>
+        <select id="leadAbility" onchange="mff.leadAbilityChange()"></select>
+        <select id="helpAbility" onchange="mff.helpAbilityChange()"></select>
+        <input
+          type="search"
+          name="name"
+          id="name"
+          placeholder="英雄名称"
+          onchange="mff.nameSearch()"
+        />
+        <button onclick="mff.reset()">重置</button>
+      </section>
+    </header>
+    <table>
+      <thead>
+        <tr>
+          <th>姓名</th>
+          <th>性别</th>
+          <th>制服</th>
+          <th>种族</th>
+          <th>阵营</th>
+          <th>能力</th>
+          <th>队长技能</th>
+          <th>非队长团队技能</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </body>
+  <script src="./data.js"></script>
+  <script>
+    let mff = {
+      heros: [],
+      searchStatus: {
+        type: "all",
+        side: "all",
+        gender: "all",
+        allies: "all",
+        ability: "all",
+        leadAbility: "all",
+        helpAbility: "all",
+        name: null,
+        t3: false,
+      },
+      abilityChange() {
+        this.searchStatus.ability = document.getElementById("ability").value;
+        this.update(["ability"]);
+      },
+      addHero(
+        name,
+        gender,
+        type,
+        uniform,
+        allies,
+        side,
+        ability,
+        leadAbility,
+        helpAbility,
+        t3
+      ) {
+        hero = {};
+        hero.name = name;
+        hero.gender = gender;
+        hero.type = type;
+        hero.uniform = uniform;
+        hero.allies = allies;
+        hero.side = side;
+        hero.ability = ability;
+        hero.leadAbility = leadAbility;
+        hero.helpAbility = helpAbility;
+        hero.t3 = t3;
+        this.heros.push(hero);
+      },
+      addHeros(data) {
+        data.forEach((e) => {
+          mff.addHero(
+            e[0],
+            e[1],
+            e[2],
+            e[3],
+            e[4],
+            e[5],
+            e[6],
+            e[7],
+            e[8],
+            e[9]
+          );
+        });
+      },
+      alliesChange() {
+        this.searchStatus.allies = document.getElementById("allies").value;
+        this.update();
+      },
+      genderChange() {
+        this.searchStatus.gender = document.getElementById("gender").value;
+        this.update();
+      },
+      leadAbilityChange() {
+        this.searchStatus.leadAbility =
+          document.getElementById("leadAbility").value;
+        this.update(["leadAbility"]);
+      },
+      helpAbilityChange() {
+        this.searchStatus.helpAbility =
+          document.getElementById("helpAbility").value;
+        this.update(["helpAbility"]);
+      },
+      nameSearch() {
+        this.searchStatus.name = document.getElementById("name").value;
+        this.update();
+      },
+      reset() {
+        this.searchStatus = {
+          type: "all",
+          side: "all",
+          gender: "all",
+          allies: "all",
+          ability: "all",
+          leadAbility: "all",
+          helpAbility: "all",
+          name: null,
+          t3: false,
+        };
+        document.getElementById("allies").value = "all";
+        document.getElementById("gender").value = "all";
+        document.getElementById("side").value = "all";
+        document.getElementsByName("type")[0].checked = true;
+        this.update();
+      },
+      sideChange() {
+        this.searchStatus.side = document.getElementById("side").value;
+        this.update();
+      },
+      t3Change() {
+        this.searchStatus.t3 = document.getElementById("t3").checked;
+        this.update();
+      },
+      typeChange() {
+        let l = document.getElementsByName("type");
+        for (let i = 0; i < l.length; i++) {
+          if (l[i].checked) {
+            mff.searchStatus.type = l[i].value;
+          }
+        }
+        this.update();
+      },
+      update(ignore = "") {
+        const status = mff.searchStatus;
+        let dataString = "";
+        let abilityData = new Set();
+        let leadData = new Set();
+        let helpData = new Set();
+        this.heros.filter((element, index, self) => {
+          /*
+            1. 展示数据
+            2. 填充select
+            3. 过滤数据
+            4. 关键词高亮
+				  */
+          let ts = "";
+          // 隔行变色
+          if (index % 2 === 0) {
+            ts += '<tr class="bg_a">';
+          } else {
+            ts += "<tr>";
+          }
 
-<body>
-	<header>
-		<section onclick='mff.typeChange()'>
-			<label><input type='radio' name='type' value='all' checked />全部英雄</label>
-			<label><input type='radio' name='type' value='力量' />力量</label>
-			<label><input type='radio' name='type' value='能量' />能量</label>
-			<label><input type='radio' name='type' value='敏捷' />敏捷</label>
-			<label><input type='radio' name='type' value='全能' />全能</label>
-			<label for="t3">
-				<input id="t3" type="checkbox" onchange="mff.t3Change()">T3
-			</label>
-		</section>
-		<section>
-			<select id='side' onchange='mff.sideChange()'>
-				<option value='all'>全部</option>
-				<option value='英雄'>英雄</option>
-				<option value='反派'>反派</option>
-				<option value='中立'>中立</option>
-			</select>
-			<select id='gender' onchange='mff.genderChange()'>
-				<option value='all'>全部</option>
-				<option value='男'>男性</option>
-				<option value='女'>女性</option>
-				<option value='中'>中性</option>
-			</select>
-			<select id='allies' onchange='mff.alliesChange()'>
-				<option value='all'>全部</option>
-				<option value='人类'>人类</option>
-				<option value='变种人'>变种人</option>
-				<option value='异人族'>异人族</option>
-				<option value='外星人'>外星人</option>
-				<option value='生物'>生物</option>
-				<option value='未知'>未知</option>
-			</select>
-			<select id="ability" onchange='mff.abilityChange()'>
+          if (status.type !== "all" && element.type !== status.type) {
+            return false;
+          }
+          if (status.side !== "all" && element.side !== status.side) {
+            return false;
+          }
+          if (status.gender !== "all" && element.gender !== status.gender) {
+            return false;
+          }
+          if (status.allies !== "all" && element.allies !== status.allies) {
+            return false;
+          }
+          if (
+            status.ability !== "all" &&
+            element.ability.indexOf(status.ability) < 0
+          ) {
+            return false;
+          }
+          if (status.t3 && element.t3 < 3) {
+            return false;
+          }
+          if (status.name && element.name.indexOf(status.name) < 0) {
+            return false;
+          }
+          if (status.leadAbility !== "all") {
+            if (element.leadAbility === null) {
+              return false;
+            } else {
+              let flag = false;
+              element.leadAbility.filter((el) => {
+                if (el.type === status.leadAbility) {
+                  flag = true;
+                }
+              });
+              if (!flag) {
+                return false;
+              }
+            }
+          }
+          if (status.helpAbility !== "all") {
+            if (element.helpAbility === null) {
+              return false;
+            } else {
+              let flag = false;
+              element.helpAbility.filter((el) => {
+                if (el.type === status.helpAbility) {
+                  flag = true;
+                }
+              });
+              if (!flag) {
+                return false;
+              }
+            }
+          }
 
-			</select>
-			<select id="leadAbility" onchange='mff.leadAbilityChange()'>
+          ts += "<td>" + element.name.replace("（", "<br>（") + "</td>";
+          ts += "<td>" + element.gender + "</td>";
+          ts += "<td>" + element.uniform + "</td>";
+          ts += "<td>" + element.allies + "</td>";
+          ts += "<td>" + element.side + "</td>";
 
-			</select>
-			<select id="helpAbility" onchange='mff.helpAbilityChange()'>
+          let abilityString = "";
+          if (element.ability.length > 0) {
+            abilityString += "<td>";
+            element.ability.forEach((el, index, data) => {
+              if (index < data.length - 1) {
+                abilityString +=
+                  '<span class="underline">' + el + "</span></br>";
+              } else {
+                abilityString += el + "</br>";
+              }
+              abilityData.add(el);
+            });
+            if (status.ability !== "all") {
+              abilityString = abilityString.replaceAll(
+                status.ability,
+                "<em>" + status.ability + "</em>"
+              );
+            }
+            abilityString += "</td>";
+          } else {
+            abilityString += "<td>-</td>";
+          }
+          ts += abilityString;
 
-			</select>
-			<input type="search" name="name" id="name" placeholder="英雄名称" onchange="mff.nameSearch()">
-			<button onclick='mff.reset()'>重置</button>
-		</section>
-	</header>
-	<table>
-		<thead>
-			<tr>
-				<th>姓名</th>
-				<th>性别</th>
-				<th>制服</th>
-				<th>种族</th>
-				<th>阵营</th>
-				<th>能力</th>
-				<th>队长技能</th>
-				<th>非队长团队技能</th>
-			</tr>
-		</thead>
-		<tbody></tbody>
-	</table>
-</body>
+          let leadAbilityString = "";
+          if (element.leadAbility) {
+            leadAbilityString += "<td>";
+            element.leadAbility.forEach((el, index, data) => {
+              leadData.add(el.type);
+              if (index < data.length - 1) {
+                leadAbilityString +=
+                  '<span class="underline">' +
+                  el.for +
+                  ":" +
+                  el.type +
+                  ":" +
+                  el.value +
+                  "</span></br>";
+              } else {
+                leadAbilityString +=
+                  el.for + ":" + el.type + ":" + el.value + "<br>";
+              }
+            });
+            if (status.leadAbility !== "all") {
+              leadAbilityString = leadAbilityString.replaceAll(
+                status.leadAbility,
+                "<em>" + status.leadAbility + "</em>"
+              );
+            }
+            leadAbilityString += "</td>";
+          } else {
+            leadAbilityString += "<td>-</td>";
+          }
+          ts += leadAbilityString;
 
-<script>
-	let mff = {
-		heros: [],
-		searchStatus: {
-			type: 'all',
-			side: 'all',
-			gender: 'all',
-			allies: 'all',
-			ability:'all',
-			leadAbility: 'all',
-			helpAbility:'all',
-			name:null,
-			t3:false
-		},
-		abilityChange() {
-			this.searchStatus.ability = document.getElementById('ability').value;
-			this.update(['ability']);
-		},
-		addHero(name, gender, type, uniform, allies, side, ability, leadAbility, helpAbility,t3) {
-			hero = {};
-			hero.name = name
-			hero.gender = gender;
-			hero.type = type;
-			hero.uniform = uniform;
-			hero.allies = allies;
-			hero.side = side;
-			hero.ability = ability;
-			hero.leadAbility = leadAbility;
-			hero.helpAbility = helpAbility;
-			hero.t3 = t3;
-			this.heros.push(hero);
-		},
-		addHeros(data) {
-			data.forEach((e) => {
-				mff.addHero(e[0], e[1], e[2], e[3], e[4], e[5], e[6], e[7], e[8],e[9]);
-			});
-		},
-		alliesChange() {
-			this.searchStatus.allies = document.getElementById('allies').value;
-			this.update();
-		},
-		genderChange() {
-			this.searchStatus.gender = document.getElementById('gender').value;
-			this.update();
-		},
-		leadAbilityChange() {
-			this.searchStatus.leadAbility = document.getElementById('leadAbility').value;
-			this.update(['leadAbility']);
-		},
-		helpAbilityChange(){
-			this.searchStatus.helpAbility = document.getElementById('helpAbility').value;
-			this.update(['helpAbility']);
-		},
-		nameSearch(){
-			this.searchStatus.name = document.getElementById('name').value;
-			this.update();
-		},
-		reset() {
-			this.searchStatus = {
-				type: 'all',
-				side: 'all',
-				gender: 'all',
-				allies: 'all',
-				ability:'all',
-				leadAbility: 'all',
-				helpAbility:'all',
-				name:null,
-				t3:false
-			}
-			document.getElementById('allies').value = 'all';
-			document.getElementById('gender').value = 'all';
-			document.getElementById('side').value = 'all';
-			document.getElementsByName('type')[0].checked = true;
-			this.update();
-		},
-		sideChange() {
-			this.searchStatus.side = document.getElementById('side').value;
-			this.update();
-		},
-		t3Change(){
-			this.searchStatus.t3 = document.getElementById('t3').checked;
-			this.update();
-		},
-		typeChange() {
-			let l = document.getElementsByName('type');
-			for (let i = 0; i < l.length; i++) {
-				if (l[i].checked) {
-					mff.searchStatus.type = l[i].value;
-				}
-			};
-			this.update();
-		},
-		update(ignore = 'none') {
-			const status = mff.searchStatus;
-			let dataString = '';
-			let abilityData = new Set();
-			let abilityString = '<option value="all">固有能力：全部</option>';
-			let leadData = new Set();
-			let leadString = '<option value="all">队长技能：全部</option>';
-			let helpData = new Set();
-			let helpString = '<option value="all">团队技能：全部</option>';
-			let colorConter = 1;
-			
-			this.heros.filter((element, index, self) => {
-				/*
-				1. 展示数据
-				2. 填充select
-				3. 过滤数据
-				4. 关键词高亮
-				*/
+          let headAbilityString = "";
+          if (element.helpAbility) {
+            headAbilityString += "<td>";
+            element.helpAbility.forEach((el, index, data) => {
+              helpData.add(el.type);
+              if (index < data.length - 1) {
+                headAbilityString +=
+                  '<span class="underline">' +
+                  el.for +
+                  ":" +
+                  el.type +
+                  ":" +
+                  el.value +
+                  "</span></br>";
+              } else {
+                headAbilityString +=
+                  el.for + ":" + el.type + ":" + el.value + "<br>";
+              }
+            });
+            if (status.helpAbility !== "all") {
+              headAbilityString = headAbilityString.replaceAll(
+                status.helpAbility,
+                "<em>" + status.helpAbility + "</em>"
+              );
+            }
+            headAbilityString += "</td>";
+          } else {
+            headAbilityString += "<td>-</td>";
+          }
+          ts += headAbilityString;
 
-				if (element.type !== status.type && status.type !== 'all') {
-					return false;
-				}
-				if (element.side !== status.side && status.side !== 'all') {
-					return false;
-				}
-				if (element.gender !== status.gender && status.gender !== 'all') {
-					return false;
-				}
-				if (element.allies !== status.allies && status.allies !== 'all') {
-					return false;
-				}
-				if (status.t3 && element.t3<3){
-					return false;
-				}
-				if(status.ability !== 'all' && element.ability.indexOf(status.ability) === -1){
-					return false;
-				}
-				if(status.name !== null && status.name !== '' && element.name.indexOf(status.name) === -1){
-					return false;
-				}
-				if (status.leadAbility !== 'all') {
-					if (Array.isArray(element.leadAbility)) {
-						let flag = false;
-						element.leadAbility.filter((el)=>{
-							if(el.type === status.leadAbility){
-								flag = true;
-							}
-						});
+          ts += "</tr>";
+          dataString += ts;
+        });
+        document.getElementsByTagName("tbody")[0].innerHTML = dataString;
 
-						if(!flag){
-							return false;
-						}
-					} else {
-						if (element.leadAbility === null || element.leadAbility.type !== status.leadAbility) {
-							return false;
-						}
-					}
-
-				}
-				if (status.helpAbility !== 'all') {
-
-					if (Array.isArray(element.helpAbility)) {
-						let flag = false;
-						element.helpAbility.filter((el)=>{
-							if(el.type === status.helpAbility){
-								flag = true;
-							}
-						});
-
-						if(!flag){
-							return false;
-						}
-					} else {
-						if (element.helpAbility === null || element.helpAbility.type !== status.helpAbility) {
-							return false;
-						}
-					}
-
-				}
-
-				// 隔行变色
-				colorConter++;
-				if (colorConter % 2 === 0) {
-					dataString += '<tr class="bg_a">';
-				} else {
-					dataString += '<tr>';
-				}
-				dataString += '<td>' + element.name.replace('（','<br>（') + '</td>';
-				dataString += '<td>' + element.gender + '</td>';
-				dataString += '<td>' + element.uniform + '</td>';
-				dataString += '<td>' + element.allies + '</td>';
-				dataString += '<td>' + element.side + '</td>';
-
-
-				let abilityString = '';
-				
-				
-				if (element.ability.length > 0) {
-					abilityString += '<td>';
-
-					element.ability.forEach((el,index,data) => {
-						if(index < data.length-1){
-							abilityString += '<span class="underline">' + el + '</span></br>';
-						}else{
-							abilityString += el + '</br>';
-						}
-						abilityData.add(el);
-					});
-					
-					abilityString += '</td>';
-				} else {
-					abilityString += '<td>-</td>';
-				};
-
-				if(status.ability !== 'all'){
-					abilityString = abilityString.replaceAll(status.ability,'<em>'+status.ability+'</em>');
-				}
-				
-				dataString += abilityString;
-
-
-				let leadAbilityString = '';
-				if (element.leadAbility) {
-					leadAbilityString += '<td>';
-					if (Array.isArray(element.leadAbility)) {
-						element.leadAbility.forEach((el,index,data) => {
-							if(index < data.length-1){
-								leadAbilityString += '<span class="underline">' + el.for + ':' + el.type + ':' + el.value + '</span></br>';
-							}else{
-								leadAbilityString += el.for + ':' + el.type + ':' + el.value + '<br>';
-							}
-						});
-					} else {
-						leadAbilityString += element.leadAbility.for + ':' + element.leadAbility.type + ':' + element.leadAbility.value;
-					}
-					leadAbilityString += '</td>';
-				} else {
-					leadAbilityString += '<td>-</td>';
-				};
-				if(status.leadAbility !== 'all'){
-					leadAbilityString = leadAbilityString.replaceAll(status.leadAbility,'<em>'+status.leadAbility+'</em>');
-				}
-				
-				dataString += leadAbilityString;
-
-				let headAbilityString = '';
-				if (element.helpAbility) {
-					headAbilityString += '<td>';
-					if (Array.isArray(element.helpAbility)) {
-						element.helpAbility.forEach((el,index,data) => {
-							if(index < data.length-1){
-								headAbilityString += '<span class="underline">' + el.for + ':' + el.type + ':' + el.value + '</span></br>';
-							}else{
-								headAbilityString += el.for + ':' + el.type + ':' + el.value + '<br>';
-							}
-							
-						});
-					} else {
-						headAbilityString += element.helpAbility.for + ':' + element.helpAbility.type + ':' + element.helpAbility.value;
-					}
-					headAbilityString += '</td>';
-				} else {
-					headAbilityString += '<td>-</td>';
-				};
-
-				if(status.helpAbility !== 'all'){
-					headAbilityString = headAbilityString.replaceAll(status.helpAbility,'<em>'+status.helpAbility+'</em>');
-				}
-				dataString += headAbilityString;
-			
-				dataString += '</tr>';
-
-				if (element.leadAbility) {
-					if (Array.isArray(element.leadAbility)) {
-						element.leadAbility.forEach((el) => {
-							leadData.add(el.type);
-						});
-					} else {
-						leadData.add(element.leadAbility.type);
-					}
-				}
-
-				if (element.helpAbility) {
-					if (Array.isArray(element.helpAbility)) {
-						element.helpAbility.forEach((el) => {
-							helpData.add(el.type);
-						});
-					} else {
-						helpData.add(element.helpAbility.type);
-					}
-				}
-			})
-
-			document.getElementsByTagName('tbody')[0].innerHTML = dataString;
-			if (ignore.indexOf('leadAbility') < 0) {
-				leadData.forEach((element) => {
-					if(status.leadAbility === element){
-						leadString += 'selected';
-					}
-					leadString += '<option value="' + element + '">' + element + '</option>';
-				});
-				document.getElementById('leadAbility').innerHTML = leadString;;
-			}
-			if (ignore.indexOf('helpAbility') < 0) {
-				helpData.forEach((element) => {
-					helpString += '<option ';
-					if(status.helpAbility === element){
-						helpString += 'selected';
-					}
-					helpString += 'value="' + element + '">' + element + '</option>';
-				});
-				document.getElementById('helpAbility').innerHTML = helpString;
-			}
-
-			
-			if (ignore.indexOf('ability') < 0) {
-				abilityData.forEach((element) => {
-					abilityString += '<option ';
-					if(status.ability === element){
-						abilityString += 'selected';
-					}
-					abilityString +=' value="' + element + '">' + element + '</option>';
-				});
-				document.getElementById('ability').innerHTML = abilityString;
-			}
-		},
-	};
-	/* 
-	    [
-			'名称',
-			'性别[男/女/中性]',
-			'类型（力量/敏捷/能量/全能）',
-			'制服',
-			'种族',
-			'阵营',
-			['能力1', '能力2'],
-			[
-				{ for: '队长技能使用对象', type: '属性1名称', value: '属性1的值' },
-				{for: '队长技能使用对象', type: '属性2名称', value: '属性2的值' }
-			],
-			[
-				{ for: '非队长技能使用对象', type: '属性1名称', value: '属性1的值' },
-				{for: '非队长技能使用对象', type: '属性2名称', value: '属性2的值' }
-			],
-			是否T3[t3-3/t2.5-4]
-		]
-
-	*/
-	mff.addHeros([
-		['神奇先生', '男', '力量', '现代', '人类', '英雄', ['耐久力', '领导力', '神奇四侠'], [{ for: '神奇四侠', type: '所攻', value: '65%' }], null,3],
-		['神奇先生', '男', '力量', '未来基础智团', '人类', '英雄', ['耐久力', '领导力', '神奇四侠'], [{ for: '神奇四侠', type: '所攻', value: '65%' }], null,3],
-		['神奇先生', '男', '力量', '制造者', '人类', '反派', ['耐久力', '邪恶', '神奇四侠'], [{ for: '神奇四侠', type: '所攻', value: '65%' }], null,3],
-		['石头人', '男', '力量', '现代', '人类', '英雄', ['强大', '耐久力', '神奇四侠'], [{ for: '所有人', type: '所防', value: '50%' }], [{ for: '神奇四侠', type: '所攻',value:'40%'},{for:'神奇四侠',type:'因物理反射效果受到的伤害量减少',value:'50%'},{ for: '神奇四侠', type: '所防',value:'5%'}],4],
-		['石头人', '男', '力量', '未来基础智团', '人类', '英雄', ['强大', '耐久力', '神奇四侠'], [{ for: '所有人', type: '所防', value: '50%' }], [{ for: '所有人', type: '生命',value:'15%'},{ for: '神奇四侠', type: '所攻',value:'40%'},{for:'神奇四侠',type:'因物理反射效果受到的伤害量减少',value:'50%'},{ for: '神奇四侠', type: '所防',value:'5%'}],4],
-		['石头人', '男', '力量', '经典', '人类', '英雄', ['强大', '耐久力', '神奇四侠'], [{ for: '所有人', type: '所防', value: '50%' }], [{ for: '所有人', type: '生命',value:'15%'},{ for: '神奇四侠', type: '所攻',value:'40%'},{for:'神奇四侠',type:'因物理反射效果受到的伤害量减少',value:'50%'},{ for: '神奇四侠', type: '所防',value:'25%'},{for:'神奇四侠',type:'首领类敌人增伤',value:'25%'}],4],
-		['浩克', '男', '力量', '复仇者联盟', '人类', '英雄', ['伽玛射线', '耐久力'], [{ for: '所有人', type: '物攻', value: '30%' }], null,3],
-		['浩克', '男', '力量', '隐秘战争：不完美的未来', '人类', '反派', ['伽玛射线', '耐久力'], [{ for: '所有人', type: '物攻', value: '30%' }], null,3],
-		['浩克', '男', '力量', '世界大战浩克', '人类', '反派', ['伽玛射线', '耐久力'], [{ for: '所有人', type: '物攻', value: '30%' }], null,3],
-		['浩克', '男', '力量', '漫威：雷神3：诸神黄昏', '人类', '英雄', ['伽玛射线', '耐久力'], [{ for: '所有人', type: '物攻', value: '30%' }], null,3],
-		['浩克', '男', '力量', '复仇者联盟4：终局之战', '人类', '英雄', ['伽玛射线', '耐久力'], [{ for: '所有人', type: '物攻', value: '30%' }], null,3],
-		['浩克', '男', '力量', '复仇者制服', '人类', '英雄', ['伽玛射线', '耐久力'], [{ for: '所有人', type: '物攻', value: '30%' }], null,3],
-		['浩克', '男', '力量', '不朽浩克', '人类', '反派', ['伽玛射线', '耐久力'], [{ for: '所有人', type: '所防', value: '24%' }], null,3],
-		['纳摩', '男', '力量', '经典', '变种人', '英雄', ['强大', '耐久力'], [{ for: '所有人', type: '暴击', value: '24%' }], null,3],
-		['纳摩', '男', '力量', '凤凰五人组', '变种人', '反派', ['强大', '耐久力', '凤凰之力'], [{ for: '所有人', type: '暴击', value: '24%' }], null,3],
-		['美国队长', '男', '力量', '复仇者联盟', '人类', '英雄', ['领导力', '指挥'], [{ for: '所有人', type: '生命', value: '30%' }], null,3],
-		['美国队长', '男', '力量', '复仇者联盟：奥创纪元', '人类', '英雄', ['领导力', '指挥'], [{ for: '所有人', type: '生命', value: '30%' }], null,3],
-		['美国队长', '女', '力量', '隐秘战争：2099', '人类', '英雄', ['领导力', '指挥'], [{ for: '所有人', type: '生命', value: '30%' }], null,3],
-		['美国队长', '男', '力量', '美国队长：冬兵', '人类', '英雄', ['领导力', '指挥'], [{ for: '所有人', type: '生命', value: '30%' }], null,3],
-		['美国队长', '男', '力量', '美国队长：内战', '人类', '英雄', ['领导力', '指挥'], [{ for: '所有人', type: '生命', value: '30%' }], null,3],
-		['美国队长', '男', '力量', '漫威新刊！', '人类', '英雄', ['领导力', '指挥'], [{ for: '所有人', type: '生命', value: '30%' }], null,3],
-		['美国队长', '男', '力量', '复仇者联盟3：无限战争', '人类', '英雄', ['领导力', '指挥'], [{ for: '所有人', type: '生命', value: '30%' }], null,3],
-		['美国队长', '男', '力量', '复仇者联盟4：终局之战', '人类', '英雄', ['领导力', '指挥'], [{ for: '所有人', type: '生命', value: '30%' }], null,3],
-		['美国队长', '男', '力量', '复仇者队服', '人类', '英雄', ['领导力', '指挥'], [{ for: '所有人', type: '生命', value: '30%' }], null,3],
-		['美国队长', '男', '力量', '复仇者联盟3099', '人类', '英雄', ['领导力', '指挥'], [{ for: '所有人', type: '生命', value: '30%' }], null,3],
-		['美国队长', '男', '能量', '九头蛇首领', '人类', '反派', ['宇宙魔方', '指挥'], [{ for: '所有人', type: '生命', value: '30%' }], null,3],
-		['金刚狼', '男', '力量', '经典', '变种人', '英雄', ['武器专家', '治愈'], [{ for: '所有人', type: '异常状态时间', value: '30%' }], null,3],
-		['金刚狼', '男', '力量', '天启纪元', '变种人', '英雄', ['武器专家', '治愈'], [{ for: '所有人', type: '异常状态时间', value: '30%' }], null,3],
-		['金刚狼', '男', '力量', '全新漫威NOW！', '变种人', '英雄', ['武器专家', '治愈'], [{ for: '所有人', type: '异常状态时间', value: '30%' }], null,3],
-		['金刚狼', '男', '力量', 'X特工队', '变种人', '英雄', ['武器专家', '治愈'], [{ for: '所有人', type: '异常状态时间', value: '30%' }], null,3],
-		['金刚狼', '男', '力量', 'X皇室', '变种人', '英雄', ['武器专家', '治愈'], [{ for: '所有人', type: '异常状态时间', value: '30%' }], null,3],
-		['黑豹', '男', '力量', '现代', '人类', '英雄', ['灵活', '指挥'], [{ for: '所有人', type: '暴击', value: '15%' }], null,3],
-		['黑豹', '男', '力量', '美国队长：内战', '人类', '英雄', ['灵活', '指挥'], [{ for: '所有人', type: '暴击', value: '15%' }], null,3],
-		['黑豹', '男', '力量', '电影：黑豹', '人类', '英雄', ['灵活', '指挥'], [{ for: '所有人', type: '暴击', value: '15%' }], null,3],
-		['卢克·凯奇', '男', '力量', '现代', '人类', '英雄', ['强大', '耐久力', '捍卫者'], null, null,4],
-		['卢克·凯奇', '男', '力量', '全新，全异', '人类', '英雄', ['强大', '耐久力', '捍卫者'], null, null,4],
-		['卢克·凯奇', '男', '力量', '漫威影剧 卢克·凯奇', '人类', '英雄', ['强大', '耐久力', '捍卫者'], null, null,4],
-		['卢克·凯奇', '男', '力量', '城郊套装', '人类', '英雄', ['强大', '耐久力', '捍卫者'], null, [{ for: '守卫者', type: '无视回避', value: '35%' }],4],
-		['战虎', '男', '力量', '现代', '人类', '英雄', ['天临四将', '强大', '耐久力',], [{ for: '所有人', type: '技能冷却', value: '24%' }],null,4],
-		['月光骑士', '男', '力量', '现代', '人类', '英雄', ['领导力', '武器专家'], [{ for: '所有人', type: '异常状态时间', value: '24%' }],null,4],
-		['月光骑士', '男', '力量', '装甲', '人类', '英雄', ['领导力', '武器专家'], [{ for: '所有人', type: '异常状态时间', value: '24%' }],null,4],
-		['月光骑士', '男', '力量', '骑士先生', '人类', '英雄', ['领导力', '武器专家'], [{ for: '所有人', type: '异常状态时间', value: '24%' }],null,4],
-		['浩克（阿玛迪斯·赵）', '男', '力量', '绝妙青春浩克', '人类', '英雄', ['伽玛射线', '耐久力'], null, null,4],
-		['浩克（阿玛迪斯·赵）', '男', '力量', '怪兽出笼！（MFF变体）', '人类', '英雄', ['伽玛射线', '耐久力'], null, null,4],
-		['浩克（阿玛迪斯·赵）', '男', '力量', '膂力', '人类', '英雄', ['伽玛射线', '耐久力'], null, null,4],
-		['铁拳', '男', '力量', '经典', '人类', '英雄', ['灵活', '治愈', '捍卫者'], null, null,4],
-		['铁拳', '男', '力量', '新复仇者', '人类', '英雄', ['灵活', '治愈', '捍卫者'], null, null,4],
-		['铁拳', '男', '力量', '全新，全异', '人类', '英雄', ['灵活', '治愈', '捍卫者'], null, null,4],
-		['铁拳', '男', '力量', '漫威影剧：铁拳', '人类', '英雄', ['灵活', '治愈', '捍卫者'], null, null,4],
-		['铁拳', '男', '力量', '活体武器', '人类', '英雄', ['灵活', '治愈', '捍卫者'], [{ for: '守卫者', type: '所攻', value: '60%' }],null,4],
-		['阿瑞斯', '男', '力量', '现代', '外星人', '英雄', ['黑暗复仇者', '武器专家', '强大'], [{ for: '所有人', type: '物攻', value: '30%' }], null,4],
-		['上气', '男', '力量', '摩登', '人类', '英雄', ['灵活', '领导力'], [{ for: '所有人', type: '物攻', value: '24%' }],null,2],
-		['刀锋战士', '男', '力量', '现代', '人类', '英雄', ['治愈', '武器专家'], null, null,2],
-		['刀锋战士', '男', '力量', '70年代古典', '人类', '英雄', ['治愈', '武器专家'], null, null,2],
-		['刀锋战士', '男', '力量', '复仇者联盟', '人类', '英雄', ['治愈', '武器专家'], null, null,2],
-		['制裁者', '男', '力量', '现代', '人类', '英雄', ['领导力', '武器专家'], [{ for: '所有人', type: '物攻', value: '24%' }],null,2],
-		['制裁者', '男', '力量', '黑暗', '人类', '英雄', ['领导力', '武器专家'], [{ for: '所有人', type: '物攻', value: '24%' }],null,2],
-		['制裁者', '男', '力量', '战争之旅', '人类', '英雄', ['领导力', '武器专家'], [{ for: '所有人', type: '物攻', value: '24%' }],null,2],
-		['制裁者', '男', '力量', '漫威影剧 夜魔侠', '人类', '英雄', ['领导力', '武器专家'], [{ for: '所有人', type: '物攻', value: '24%' }],null,2],
-		['制裁者', '男', '力量', '漫威遗产', '人类', '英雄', ['领导力', '武器专家', '机器'], [{ for: '所有人', type: '物攻', value: '24%' }],null,2],
-		['制裁者', '男', '力量', '宇宙恶灵骑士', '人类', '反派', ['宇宙力量', '火焰'], [{ for: '所有人', type: '物攻', value: '24%' }],null,2],
-		['剑仙', '男', '力量', '现代', '人类', '英雄', ['领导力', '武器专家'], [{ for: '英雄', type: '所防', value: '35%' }],null,2],
-		['反浩克装甲（钢铁侠装甲马克44）', '男', '力量', '复仇者联盟：奥创纪元', '生物', '英雄', ['强大', '机器'], [{ for: '所有人', type: '物攻', value: '24%' }],null,2],
-		['反浩克装甲（钢铁侠装甲马克44）', '男', '力量', '重型护甲', '生物', '英雄', ['强大', '机器'], [{ for: '所有人', type: '物攻', value: '24%' }],null,2],
-		['反浩克装甲（钢铁侠装甲马克44）', '男', '力量', '复仇者联盟3：无限战争', '生物', '英雄', ['强大', '机器'], [{ for: '所有人', type: '物攻', value: '24%' }],null,2],
-		['哥利亚巨人', '男', '力量', '经典', '人类', '英雄', ['强大', '耐久力'], [{ for: '所有人', type: '物攻', value: '45%' }],null,2],
-		['小浩克', '男', '力量', '新复仇者', '外星人', '英雄', ['强大', '耐久力'], [{ for: '所有人', type: '物防', value: '30%' }],null,2],
-		['巨人', '男', '力量', '现代', '人类', '英雄', ['强大'], [{ for: '所有人', type: '生命', value: '30%' }],null,2],
-		['巨人', '男', '力量', '奥创皮姆', '人类', '反派', ['强大'], [{ for: '所有人', type: '生命', value: '30%' }],null,2],
-		['哥利亚巨人', '男', '力量', '现代', '人类', '英雄', ['强大'], [{ for: '所有人', type: '生命', value: '30%' }],null,2],
-		['德拉克斯', '男', '力量', '银河护卫队', '外星人', '英雄', ['治愈'], null, null,2],
-		['德拉克斯', '男', '力量', '全新，全异', '外星人', '英雄', ['治愈'], null, null,2],
-		['戈尔贡', '男', '力量', '王者之战', '异人族', '英雄', ['强大'], null, null,2],
-		['战途', '男', '力量', 'X特工队', '变种人', '英雄', ['强大', '领导力'], null, null,2],
-		['树人格鲁特', '男', '力量', '银河护卫队', '外星人', '英雄', ['治愈'], [{ for: '力量', type: '物防', value: '45%' }],null,2],
-		['树人格鲁特', '男', '力量', '隐秘战争：雷神们', '外星人', '英雄', ['治愈'], [{ for: '力量', type: '物防', value: '45%' }],null,2],
-		['树人格鲁特', '男', '力量', '银河护卫队2', '外星人', '英雄', ['治愈'], [{ for: '力量', type: '物防', value: '45%' }],null,2],
-		['树人格鲁特', '男', '力量', '复仇者联盟3：无限战争', '外星人', '英雄', ['治愈'], [{ for: '力量', type: '物防', value: '45%' }],null,2],
-		['树人格鲁特', '男', '力量', '雪花庆典', '外星人', '英雄', ['治愈'], [{ for: '力量', type: '物防', value: '45%' }],null,2],
-		['死亡战士', '男', '力量', '神盾局特工', '人类', '英雄', ['机器', '特工'], [{ for: '所有人', type: '物攻', value: '30%' }], null,2],
-		['死亡战士', '男', '力量', '现代', '人类', '英雄', ['机器', '特工'], [{ for: '所有人', type: '物攻', value: '30%' }], null,2],
-		['毒液特工', '男', '力量', '全新，全异', '人类', '英雄', ['共生体', '领导力', '特工'], [{ for: '所有人', type: '物攻', value: '30%' }], null,2],
-		['毒液特工', '男', '力量', '反毒液特工', '人类', '英雄', ['共生体', '领导力', '特工'], [{ for: '所有人', type: '物攻', value: '30%' }], null,2],
-		['沃斯塔格', '男', '力量', '现代', '外星人', '英雄', ['耐久力'], [{ for: '所有人', type: '所防', value: '30%' }],null,2],
-		['狼人', '男', '力量', '咆哮突击队', '人类', '英雄', ['治愈', '特工'], null, [{ for: '所有人', type: '爆伤', value: '30%' }],2],
-		['猩猩人', '男', '力量', '现代', '人类', '英雄', ['强大', '灵活', '武器专家'], null, null,2],
-		['角斗士', '男', '力量', '现代', '外星人', '英雄', ['高速移动', '强大', '领导力'], [{ for: '所有人', type: '所攻', value: '30%' }],null,2],
-		['野兽', '男', '力量', '经典', '变种人', '英雄', ['强大', '灵活'], [{ for: '所有人', type: '物攻', value: '45%' }], [{ for: '所有人', type: '恢复', value: '10%' },{ for: '所有人', type: '暴击', value: '8%' },{ for: '所有人', type: '受到伤害减少', value: '15%' }],2],
-		['野兽', '男', '力量', '天启纪元', '变种人', '反派', ['强大', '灵活'], [{ for: '所有人', type: '物攻', value: '50%' }],[{ for: '所有人', type: '恢复', value: '10%' },{ for: '所有人', type: '暴击', value: '8%' },{ for: '所有人', type: '受到伤害减少', value: '15%' }],2],
-		['野兽', '男', '力量', '非凡X战警', '变种人', '英雄', ['强大', '灵活'], [{ for: '所有人', type: '物攻', value: '50%' }], [{ for: '所有人', type: '恢复', value: '10%' },{ for: '所有人', type: '暴击', value: '8%' },{ for: '所有人', type: '受到伤害减少', value: '15%' }],2],
-		['钢力士', '男', '力量', '现代', '变种人', '英雄', ['强大', '领导力'], null, [{ for: '所有人', type: '因物理反射效果受到的伤害量减少', value: '60%' },{ for: '所有人', type: '反派减伤', value: '50%' }],2],
-		['钢力士', '男', '力量', 'X特工队', '变种人', '英雄', ['强大', '领导力'], null, [{ for: '所有人', type: '因物理反射效果受到的伤害量减少', value: '60%' },{ for: '所有人', type: '反派减伤', value: '50%' }],2],
-		['钢力士', '男', '力量', '凤凰五人组', '变种人', '英雄', ['强大', '领导力', '凤凰之力'], null, [{ for: '所有人', type: '因物理反射效果受到的伤害量减少', value: '60%' },{ for: '所有人', type: '反派减伤', value: '50%' },{ for: '所有人', type: '英雄减伤', value: '50%' }],2],
-		['霍根', '男', '力量', '现代', '外星人', '英雄', ['强大'], [{ for: '所有人', type: '所攻', value: '24%' }],null,2],
-		['弦月神女', '女', '力量', '现代', '人类', '英雄', ['领导力', '耐久力', '强大'], [{ for: '力量', type: '物攻', value: '60%' }], [{ for: '召唤兽', type: '所攻', value: '15%' },{ for: '召唤兽', type: '所防', value: '15%' }],3],
-		['弦月神女', '女', '力量', '生活方式系列1', '人类', '英雄', ['领导力', '耐久力', '强大'], [{ for: '力量', type: '物攻', value: '60%' }], [{ for: '召唤兽', type: '所攻', value: '15%' },{ for: '召唤兽', type: '所防', value: '15%' }],3],
-		['希芙', '女', '力量', '神盾局特工', '外星人', '英雄', ['灵活'], [{ for: '所有人', type: '生命', value: '30%' }],null,4],
-		['希芙', '女', '力量', '现代', '外星人', '英雄', ['灵活'], [{ for: '所有人', type: '生命', value: '30%' }],null,4],
-		['杰西卡·琼斯', '女', '力量', '现代', '人类', '英雄', ['强大', '耐久力', '捍卫者'], null, null,4],
-		['杰西卡·琼斯', '女', '力量', '珍宝女', '人类', '英雄', ['强大', '耐久力', '捍卫者'], null, [{for:'守卫者',type:'所攻',value:'50%'},{for:'守卫者',type:'精神伤害免疫',value:'100%'}],4],
-		['瓦尔基里', '女', '力量', '漫威：雷神3：诸神黄昏', '外星人', '英雄', ['强大'], [{for:'所有人',type:'回避',value:'11%'}], [{ for: '所有人', type: '反派增伤', value: '45%' }, { for: '所有人', type: '反派减伤', value: '15%' }],4],
-		['瓦尔基里', '女', '力量', '无畏捍卫者', '外星人', '英雄', ['强大'],  [{for:'所有人',type:'回避',value:'11%'}], [{ for: '所有人', type: '反派增伤', value: '50%' }, { for: '所有人', type: '反派减伤', value: '25%' }, { for: '所有人', type: '无视回避', value: '30%' }],4],
-		['女浩克', '女', '力量', '隐秘战争：女复仇者联盟', '人类', '英雄', ['伽玛射线', '耐久力'], [{ for: '所有人', type: '男性增伤', value: '48%' }],null,2],
-		['女浩克', '女', '力量', '全新', '人类', '英雄', ['伽玛射线', '耐久力'], [{ for: '所有人', type: '男性增伤', value: '55%' }],null,2],
-		['女浩克', '女', '力量', '神奇四侠', '人类', '英雄', ['伽玛射线', '耐久力', '神奇四侠'], [{ for: '所有人', type: '男性增伤', value: '60%' }],null,2],
-		['女浩克', '女', '力量', '复仇者联盟', '人类', '英雄', ['伽玛射线', '耐久力'], [{ for: '所有人', type: '男性增伤', value: '65%' }],null,2],
-		['惊奇女士（卡玛拉·克汗）', '女', '力量', '全新，全异', '异人族', '英雄', ['强大', '治愈'], [{ for: '所有人', type: '物防', value: '45%' }], null,2],
-		['惊奇女士（卡玛拉·克汗）', '女', '力量', '卡拉奇服装', '异人族', '英雄', ['强大', '治愈'], [{ for: '所有人', type: '物防', value: '45%' }], null,2],
-		['惊奇女士（卡玛拉·克汗）', '女', '力量', '异人族：安提兰崛起', '异人族', '英雄', ['强大', '治愈'], [{ for: '所有人', type: '物防', value: '45%' }], null,2],
-		['白虎', '女', '力量', '新复仇者', '人类', '英雄', ['灵活'], null, null,2],
-		['红色女浩克', '女', '力量', '现代', '人类', '英雄', ['伽玛射线', '耐久力', '火焰'], [{ for: '所有人', type: '火攻伤害', value: '65%' }, { for: '所有人', type: '生命', value: '25%' }], [{ for: '所有人', type: '生命', value: '30%' }, { for: '所有人', type: '受到所有伤害量下降', value: '10%' }],2],
-		['艾美利加·查维兹', '女', '力量', '终极战队', '人类', '英雄', ['强大', '高速移动'], [{ for: '所有人', type: '所攻', value: '26%' }, { for: '所有人', type: '回避', value: '6%' }], null,2],
-		['克莱图斯·卡萨伊', '男', '力量', '全新，全异', '人类', '反派', ['邪恶', '治愈', '共生体'], [{ for: '所有人', type: '暴击', value: '6%' }, { for: '所有人', type: '爆伤', value: '18%' }], null,3],
-		['克莱图斯·卡萨伊', '男', '力量', '绝对屠杀', '人类', '反派', ['邪恶', '治愈', '共生体'], [{ for: '所有人', type: '暴击', value: '6%' }, { for: '所有人', type: '爆伤', value: '18%' }], null,3],
-		['天启', '男', '力量', '天启纪元', '变种人', '反派', ['高速移动', '邪恶', '耐久力'], [{ for: '所有人', type: '所攻', value: '18%' }, { for: '所有人', type: '所防', value: '18%' }, { for: '所有人', type: '速度', value: '6%' }], null,3],
-		['天启', '男', '力量', '弥赛亚情结', '变种人', '反派', ['高速移动', '邪恶', '耐久力'], [{ for: '所有人', type: '所攻', value: '18%' }, { for: '所有人', type: '所防', value: '18%' }, { for: '所有人', type: '速度', value: '6%' }], null,3],
-		['毒液', '男', '力量', '经典', '人类', '反派', ['治愈', '共生体'], [{ for: '所有人', type: '异常状态时间', value: '24%' }],null,3],
-		['毒液', '男', '力量', '隐秘战争：漫威僵尸', '人类', '反派', ['治愈', '共生体'], [{ for: '所有人', type: '异常状态时间', value: '24%' }],null,3],
-		['毒液', '男', '力量', '反毒液', '人类', '英雄', ['治愈', '共生体'], [{ for: '所有人', type: '异常状态时间', value: '24%' }],null,3],
-		['毒液', '男', '力量', '诸界之战', '人类', '英雄', ['治愈', '共生体'], [{ for: '所有人', type: '异常状态时间', value: '24%' }],null,3],
-		['章鱼博士', '男', '力量', '经典', '人类', '反派', ['机器', '耐久力', '邪恶六人组'], [{ for: '所有人', type: '生命', value: '30%' }],null,4],
-		['章鱼博士', '男', '力量', '超级蜘蛛侠', '人类', '英雄', ['机器', '蜘蛛感应', '灵活'], [{ for: '所有人', type: '生命', value: '30%' }],null,4],
-		['章鱼博士', '男', '敏捷', '究极章鱼', '人类', '反派', ['机器', '邪恶六人组', '灵活'], [{ for: '所有人', type: '生命', value: '30%' }],null,4],
-		['红卫士', '男', '力量', '现代', '人类', '反派', ['强大', '灵活'], [{ for: '反派', type: '生命', value: '35%' }],null,4],
-		['红卫士', '男', '力量', '电源《黑寡妇》', '人类', '英雄', ['强大', '灵活'], [{ for: '英雄', type: '生命', value: '35%' }],null,4],
-		['莫比亚斯', '男', '力量', '现代', '人类', '反派', ['强大', '灵活'], [{ for: '所有人', type: '生命', value: '30%' }],null,4],
-		['靶眼', '男', '力量', '现代', '人类', '反派', ['武器专家', '邪恶'], [{ for: '所有人', type: '无视回避', value: '50%' }],null,4],
-		['靶眼', '男', '力量', '隐秘战争：1872', '人类', '反派', ['武器专家', '邪恶'], [{ for: '所有人', type: '无视回避', value: '50%' }],null,4],
-		['靶眼', '男', '敏捷', '黑暗复仇者', '人类', '反派', ['武器专家', '黑暗复仇者'], [{ for: '所有人', type: '无视回避', value: '50%' }],null,4],
-		['交叉骨', '男', '力量', '美国队长：内战', '人类', '反派', ['武器专家'], [{ for: '所有人', type: '物攻', value: '30%' }], null,2],
-		['交叉骨', '男', '力量', '现代', '人类', '反派', ['武器专家'], [{ for: '所有人', type: '物攻', value: '30%' }], null,2],
-		['交叉骨', '男', '力量', '秘密帝国', '人类', '反派', ['武器专家'], [{ for: '所有人', type: '物攻', value: '30%' }], null,2],
-		['克尔芒戈', '男', '力量', '经典', '人类', '反派', ['强大','指挥'], [{ for: '所有人', type: '物防', value: '50%' }], null,2],
-		['克尔芒戈', '男', '力量', '电影：黑豹', '人类', '反派', ['强大','指挥'], [{ for: '所有人', type: '物防', value: '50%' }], null,2],
-		['剑齿虎', '男', '力量', '变种人兄弟会', '变种人', '反派', ['邪恶','灵活'], [{ for: '所有人', type: '异常状态时间', value: '24%' }], null,2],
-		['剑齿虎', '男', '力量', '非凡复仇者', '变种人', '反派', ['邪恶','灵活'], [{ for: '所有人', type: '异常状态时间', value: '24%' }], null,2],
-		['吸收人', '男', '力量', '现代', '人类', '反派', ['强大'], [{ for: '所有人', type: '物防', value: '45%' }], null,2],
-		['尤里克', '男', '力量', '现代', '外星人', '反派', ['强大','耐久力'], [{ for: '所有人', type: '物攻', value: '30%' }], null,2],
-		['恶型怪', '男', '力量', '现代', '人类', '反派', ['伽马射线','耐久力'], [{ for: '力量', type: '所攻', value: '60%' }], [{ for: '伽马射线', type: '多段打击伤害', value: '20%' },{ for: '伽马射线', type: '英雄增伤', value: '45%' },{ for: '伽马射线', type: '反派增伤', value: '45%' }],2],
-		['戴肯', '男', '力量', '现代', '变种人', '反派', ['武器专家','治愈'], [{ for: '所有人', type: '异常状态时间', value: '30%' }], null,2],
-		['斯科尔奇', '男', '力量', '漫威：雷神3：诸神黄昏', '外星人', '反派', ['强大','耐久力'], [{ for: '所有人', type: '暴击', value: '9%' },{ for: '所有人', type: '攻速', value: '9%' }], null,2],
-		['模仿大师', '男', '力量', '现代', '人类', '反派', ['武器专家','邪恶'], [{ for: '所有人', type: '回避', value: '9%' }], [{ for: '武器专家', type: '暴击', value: '20%' },{ for: '武器专家', type: '无视回避', value: '20%' },{ for: '武器专家', type: '技能增伤', value: '25%' },{ for: '武器专家', type: '额外伤害量', value: '20%' }],2],
-		['模仿大师', '男', '力量', '电影《黑寡妇》', '人类', '反派', ['武器专家','邪恶'], [{ for: '所有人', type: '回避', value: '9%' }], [{ for: '武器专家', type: '暴击', value: '20%' },{ for: '武器专家', type: '无视回避', value: '20%' },{ for: '武器专家', type: '技能增伤', value: '25%' },{ for: '武器专家', type: '额外伤害量', value: '20%' },{ for: '所有人', type: '英雄增伤', value: '40%' },{ for: '所有人', type: '反派增伤', value: '40%' }],2],
-		['沙魔', '男', '力量', '经典', '人类', '反派', ['耐久力','邪恶六人组'], [{ for: '所有人', type: '所防', value: '24%' }], null,2],
-		['熔浆元素', '男', '力量', '蜘蛛侠：英雄远征', '人类', '反派', ['邪恶','耐久力','火焰'], [{ for: '所有人', type: '所防', value: '45%' }], null,2],
-		['犀牛人', '男', '力量', '现代', '经典', '反派', ['强大','耐久力'], [{ for: '所有人', type: '无视防御', value: '20%' }], null,2],
-		['红坦克', '男', '力量', '变种人兄弟会', '变种人', '反派', ['强大','耐久力','邪恶'], [{ for: '所有人', type: '所防', value: '50%' }], null,2],
-		['红浩克', '男', '力量', '现代', '人类', '反派', ['火焰','伽玛射线'], [{ for: '所有人', type: '火攻伤害', value: '60%' },{ for: '所有人', type: '灼烧效果', value: '免疫' }], null,2],
-		['红浩克', '男', '力量', '漫威新刊！', '人类', '英雄', ['火焰','伽玛射线'], [{ for: '所有人', type: '火攻伤害', value: '60%' },{ for: '所有人', type: '灼烧效果', value: '免疫' }], null,2],
-		['红浩克', '男', '力量', '复仇共生体', '人类', '英雄', ['火焰','伽玛射线','共生体'], [{ for: '所有人', type: '火攻伤害', value: '70%' },{ for: '所有人', type: '灼烧效果', value: '免疫' }], null,2],
-		['蜥蜴', '男', '力量', '经典', '人类', '反派', ['治愈','邪恶六人组'], [{ for: '所有人', type: '物攻', value: '30%' }], null,2],
-		['金并', '男', '力量', '现代', '人类', '反派', ['强大','指挥'], [{ for: '所有人', type: '生命', value: '30%' }], null,2],
-		['金并', '男', '力量', '隐秘战争：装甲战争', '人类', '反派', ['强大','指挥','机器'], [{ for: '所有人', type: '生命', value: '30%' }], null,2],
-		['尖叫', '女', '力量', '现代', '人类', '反派', ['强大','邪恶','共生体'], [{ for: '所有人', type: '暴击', value: '12%' }], null,2],
-		['星云', '女', '力量', '银河护卫队', '外星人', '反派', ['电击','武器专家'], null, null,2],
-		['星云', '女', '力量', '经典', '外星人', '反派', ['电击','武器专家'], null, null,2],
-		['星云', '女', '力量', '复仇者联盟4：终局之战', '外星人', '反派', ['电击','武器专家'], null, null,2],
-		['星云', '女', '力量', '复仇者队服', '外星人', '反派', ['电击','武器专家'], null, null,2],
-		['泰坦尼亚', '女', '力量', '现代', '人类', '反派', ['强大'], [{ for: '力量', type: '物攻', value: '50%' }], null,2],
-		['米·勒娃', '女', '力量', '现代', '外星人', '反派', ['强大','灵活','邪恶'], [{ for: '所有人', type: '异常状态时间', value: '24%' }], null,2],
-		['米·勒娃', '女', '力量', '电影《惊奇队长》', '外星人', '反派', ['强大','灵活','邪恶'], [{ for: '所有人', type: '异常状态时间', value: '24%' }], null,2],
-
-
-		['X教授', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['钢铁侠', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['幻视', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['霹雳火', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['奇异博士', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['星爵', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['电索', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['镭射眼', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['牌皇', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['冰人', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['古一', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['宇宙魔士亚当', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['巫术', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['战争机器', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['林肯坎贝尔', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['欧米伽小子', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['毕晓普', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['火箭浣熊', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['烈火', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['菲尔·科尔森', '男', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['猩红女巫', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['隐形女侠', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['暴风女', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['琴·格蕾', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['美国队长（莎伦·罗杰斯）', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['蜘蛛女', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['青龙', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['咒术武器', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['救援', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['月亮女孩', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['格林妹妹', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['歌姬', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['水晶', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['灵蝶', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['炫音', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['瑞秋·萨默斯', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['瑟西', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['白光花火', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['艾玛·弗斯特', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['螳螂', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['钢铁之心', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['魔剑客', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['黄蜂女', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['黄蜂女（纳迪娅·凡·戴思）', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['黑后', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['黛西·约翰逊', '女', '能量', '现代', 'TODO', '英雄', [], null, null,null],
-		['墨菲斯托', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['万磁王', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['红骷髅', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['卡西利亚斯', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['尤利西斯克劳', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['斯特拉夫', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['猛水元素', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['罪恶先生', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['致幻客', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['莫度男爵', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['鞭挞', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['鞭索', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['马西姆斯', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['魔雷基', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['黄杉侠', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['默多克', '男', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['月光石', '女', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['魅惑魔女', '女', '能量', '现代', 'TODO', '反派', [], null, null,null],
-		['冬兵', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['夜魔侠', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['快银', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['死侍', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['蚁人', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['蜘蛛侠', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['凤凰', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['夜行者', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['勇度', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['卡尔纳克', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['天使', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['尼克·弗瑞', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['怪兽小子', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['猎鹰', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['猩红蜘蛛', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['王', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['白幽灵', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['范达尔', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['蜘蛛侠（迈尔斯·莫拉莱斯）', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['蜘蛛侠2099', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['蜘蛛骑士', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['鹰眼', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['黑鹰', '男', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['冰月花雪', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['小淘气', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['黑寡妇', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['X-23', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['艾尔莎·血石', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['蛛丝', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['蜘蛛格温', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['仿声鸟', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['凯蒂·普莱德', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['地狱猫', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['多米诺', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['幻影刺客', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['松鼠女', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['格温侍', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['气旋', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['浪', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['白狐', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['舒莉', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['莎伦·卡特', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['葛摩拉', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['迷雾骑士', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['鹰眼（凯特·毕晓普）', '女', '敏捷', '现代', 'TODO', '英雄', [], null, null,null],
-		['幽灵', '男', '敏捷', '现代', 'TODO', '反派', [], null, null,null],
-		['泽莫男爵', '男', '敏捷', '现代', 'TODO', '反派', [], null, null,null],
-		['猎人克莱文', '男', '敏捷', '现代', 'TODO', '反派', [], null, null,null],
-		['电王', '男', '敏捷', '现代', 'TODO', '反派', [], null, null,null],
-		['秃鹫', '男', '敏捷', '现代', 'TODO', '反派', [], null, null,null],
-		['科拉斯', '男', '敏捷', '现代', 'TODO', '反派', [], null, null,null],
-		['绿魔', '男', '敏捷', '现代', 'TODO', '反派', [], null, null,null],
-		['蝎子', '男', '敏捷', '现代', 'TODO', '反派', [], null, null,null],
-		['魔形女', '女', '敏捷', '现代', 'TODO', '反派', [], null, null,null],
-		['原罪', '女', '敏捷', '现代', 'TODO', '反派', [], null, null,null],
-		['叶莲娜·贝洛娃', '女', '敏捷', '现代', 'TODO', '反派', [], null, null,null],
-		['蝰蛇', '女', '敏捷', '现代', 'TODO', '反派', [], null, null,null],
-		['黑猫', '女', '敏捷', '现代', 'TODO', '反派', [], null, null,null],
-		['哨兵', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['奥丁', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['恶灵骑士', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['银河冲浪者', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['雷神索尔', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['黑霹雷', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['海姆达尔', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['贝塔·雷·比尔', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['亥伯龙', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['伊格瑞斯', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['地狱风暴', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['巫毒博士', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['恶灵骑士（罗比·雷伊斯）', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['恶灵黑豹', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['新星（理查德·赖德）', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['蔚蓝奇侠', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['诺瓦（萨姆·亚历山大）', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['钢铁神锤', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['闹闹', '男', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['惊奇队长', '女', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['玄武', '女', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['美杜莎', '女', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['克丽', '女', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['奇点', '女', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['安吉拉', '女', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['帕罗·威尔', '女', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['萨塔娜', '女', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['雷神索尔（简·福斯特）', '女', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['魁萨（艾薇儿·金凯德）', '女', '全能', '现代', 'TODO', '英雄', [], null, null,null],
-		['分子人', '男', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['多玛姆', '男', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['灭霸', '男', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['纳尔', '男', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['邪神洛基', '男', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['亡刃黑鸦', '男', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['反物质人', '男', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['塞恩', '男', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['奥创', '男', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['毁灭博士', '男', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['罗南', '男', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['黑矮星', '男', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['黑舌谋士', '男', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['威勇大将', '女', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['摩根勒菲', '女', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['暗夜比邻星', '女', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['死亡女神', '女', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['超巨星', '女', '全能', '现代', 'TODO', '反派', [], null, null,null],
-		['毁灭者', '中', '全能', '经典', '生物', '中立', ['火焰'], [{ for: '所有人', type: '能防', value: '30%' }], null,null],
-		['毁灭者', '中', '全能', '普罗米修斯', '生物', '中立', ['能源斗士'], [{ for: '所有人', type: '能防', value: '30%' }], null,null]
-	]);
-
-	// 展示数据
-	mff.update();
-</script>
+        if (ignore.indexOf("leadAbility") < 0 || status.leadAbility === "all") {
+          let leadString = '<option value="all">队长技能：全部</option>';
+          leadData.forEach((element) => {
+            leadString += "<option ";
+            if (status.leadAbility === element) {
+              leadString += "selected ";
+            }
+            leadString += 'value="' + element + '">' + element + "</option>";
+          });
+          document.getElementById("leadAbility").innerHTML = leadString;
+        }
+        if (ignore.indexOf("helpAbility") < 0 || status.helpAbility === "all") {
+          let helpString = '<option value="all">团队技能：全部</option>';
+          helpData.forEach((element) => {
+            helpString += "<option ";
+            if (status.helpAbility === element) {
+              helpString += "selected ";
+            }
+            helpString += 'value="' + element + '">' + element + "</option>";
+          });
+          document.getElementById("helpAbility").innerHTML = helpString;
+        }
+        if (ignore.indexOf("ability") < 0 || status.ability === "all") {
+          let abilityString = '<option value="all">固有能力：全部</option>';
+          abilityData.forEach((element) => {
+            abilityString += "<option ";
+            if (status.ability === element) {
+              abilityString += "selected ";
+            }
+            abilityString += 'value="' + element + '">' + element + "</option>";
+          });
+          document.getElementById("ability").innerHTML = abilityString;
+        }
+      },
+    };
+    mff.addHeros(heros);
+    mff.update();
+  </script>
 </html>

@@ -1,0 +1,29 @@
+table{
+    border-collapse: collapse;
+    text-align: center;
+    margin: 0 auto;
+}
+tbody{
+    border: 1px solid #fff;
+}
+td{
+    padding: 1px;
+    border: 1px #d6dcde ridge;
+}
+td em {
+    color:#ff0000;
+    font-style: unset;
+    font-weight: bolder;
+}
+.bg_a {
+    background: #ddf4ff;
+}
+#name{
+    width:6em;
+}
+.underline{
+    text-decoration: underline #545454 solid;
+}
+header{
+    text-align: center;
+}
